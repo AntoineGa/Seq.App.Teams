@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Seq.App.Teams</id>
+    <version>$version$</version>
+    <authors>Antoine Gay</authors>
+    <owners>Antoine Gay</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/AntoineGa/Seq.App.Teams</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>See https://github.com/AntoineGa/Seq.App.Teams for changes.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>seq-app seq serilog event teams</tags>
+    <dependencies>
+      <dependency id="Seq.Apps" version="1.0.2.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Debug\Seq.App.Teams.dll" target="lib\net45" />
+    <file src="bin\Debug\Seq.App.Teams.pdb" target="lib\net45" />
+    <file src="bin\Debug\Newtonsoft.Json.dll" target="lib\net45" />
+    <file src="bin\Debug\System.Net.Http.Formatting.dll" target="lib\net45" />
+  </files>
+</package>
