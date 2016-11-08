@@ -16,6 +16,6 @@ namespace Seq.App.Teams
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
         [JsonProperty(PropertyName = "target")]
-        public string Target { get; set; }
+        public string[] Target { get; set; }
     }
 }
