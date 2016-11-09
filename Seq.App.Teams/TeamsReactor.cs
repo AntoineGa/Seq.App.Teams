@@ -86,7 +86,9 @@ namespace Seq.App.Teams
 
         private string BuildBody(Event<LogEventData> evt)
         {
-            var msg = new StringBuilder("<strong>" + evt.Data.Level + ":</strong> " + evt.Data.RenderedMessage);
+
+            TeamsPotentialAction action = null;
+            var msg = new StringBuilder("**" + evt.Data.Level + ":** " + evt.Data.RenderedMessage);
             if (msg.Length > 1000)
             {
                 msg.Length = 1000;
@@ -94,11 +96,12 @@ namespace Seq.App.Teams
 
             if (!string.IsNullOrWhiteSpace(BaseUrl))
             {
-                msg.AppendLine();
-                msg.AppendLine(
-                    string.Format(
-                        "<a href=\"{0}/#/events?filter=@Id%20%3D%3D%20%22{1}%22&show=expanded\">Click here to open in Seq</a>",
-                        BaseUrl, evt.Id));
+                action = new TeamsPotentialAction()
+                {
+                    Type = "ViewAction",
+                    Name = "Click here to open in Seq",
+                    Target = new string[] { string.Format("{0}/#/events?filter=@Id%20%3D%3D%20%22{1}%22&show=expanded", BaseUrl, evt.Id) }
+                };
             }
 
             var color = Color;
@@ -110,11 +113,16 @@ namespace Seq.App.Teams
             TeamsCard body = new TeamsCard()
             {
                 Title = "<span style='color:"+color+"'>" + evt.Data.Level+"</span>",
-                //themeColor = color,
+                ThemeColor = color,
                 Text = msg.ToString()
-
                 
             };
+
+            if (action != null)
+            {
+                body.PotentialAction = new TeamsPotentialAction[1] { action };
+            }
+            
 
             return JsonConvert.SerializeObject(body);
         }
