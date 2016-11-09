@@ -14,7 +14,6 @@ namespace Seq.App.Teams
     Description = "Sends log events to Teams.")]
     public class TeamsReactor : Reactor, ISubscribeTo<LogEventData>
     {
-        private const string DefaultTeamsBaseUrl = "https://api.Teams.com/v2/";
         
         private static IDictionary<LogEventLevel, string> _levelColorMap = new Dictionary<LogEventLevel, string>
         {
@@ -33,19 +32,10 @@ namespace Seq.App.Teams
         public string BaseUrl { get; set; }
         
         [SeqAppSetting(
-        DisplayName = "Teams Base URL",
-        HelpText = "Default will be: " + DefaultTeamsBaseUrl,
-        IsOptional = true)]
+        DisplayName = "Teams WebHook URL",
+        HelpText = "Used to send message to Teams")]
         public string TeamsBaseUrl { get; set; }
 
-        [SeqAppSetting(
-        HelpText = "Admin or notification token (get it from Teams.com admin).")]
-        public string Token { get; set; }
-
-        [SeqAppSetting(
-        DisplayName = "Room",
-        HelpText = "ID or name of the room to post messages to.")]
-        public string RoomId { get; set; }
 
         [SeqAppSetting(
         HelpText = "Background color for message. One of \"yellow\", \"red\", \"green\", \"purple\", \"gray\", or \"random\". (default: auto based on message level)",
@@ -61,15 +51,13 @@ namespace Seq.App.Teams
         {
             using (var client = new HttpClient())
             {
-                var url = string.IsNullOrWhiteSpace(TeamsBaseUrl)
-                    ? DefaultTeamsBaseUrl
-                    : TeamsBaseUrl;
+                var url = TeamsBaseUrl;
                 client.BaseAddress = new Uri(url);
 
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                string body = BuildBody(evt);
+                TeamsCard body = BuildBody(evt);
 
                 var response = await client.PostAsJsonAsync(
                     "",
@@ -84,7 +72,7 @@ namespace Seq.App.Teams
             }
         }
 
-        private string BuildBody(Event<LogEventData> evt)
+        private TeamsCard BuildBody(Event<LogEventData> evt)
         {
 
             TeamsPotentialAction action = null;
@@ -124,7 +112,7 @@ namespace Seq.App.Teams
             }
             
 
-            return JsonConvert.SerializeObject(body);
+            return body;
         }
     }
 }
