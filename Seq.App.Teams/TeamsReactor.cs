@@ -7,12 +7,13 @@ using System.Text;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace Seq.App.Teams
 {
     [SeqApp("Teams",
     Description = "Sends log events to Teams.")]
-    public class TeamsReactor : Reactor, ISubscribeTo<LogEventData>
+    public class TeamsReactor : Reactor
     {
         
         private static IDictionary<LogEventLevel, string> _levelColorMap = new Dictionary<LogEventLevel, string>
@@ -47,7 +48,7 @@ namespace Seq.App.Teams
         IsOptional = true)]
         public bool Notify { get; set; }
 
-        public async void On(Event<LogEventData> evt)
+        public async Task On(Event<LogEventData> evt)
         {
             using (var client = new HttpClient())
             {
@@ -75,22 +76,20 @@ namespace Seq.App.Teams
         private TeamsCard BuildBody(Event<LogEventData> evt)
         {
 
-            TeamsPotentialAction action = null;
-            var msg = new StringBuilder("**" + evt.Data.Level + ":** " + evt.Data.RenderedMessage);
-            if (msg.Length > 1000)
-            {
-                msg.Length = 1000;
-            }
+            var msg = new StringBuilder("**" + evt.Data.Level.ToString() + ":** " + evt.Data.RenderedMessage);
+            //if (msg.Length > 1000)
+            //{
+            //    msg.Length = 1000;
+            //}
 
-            if (!string.IsNullOrWhiteSpace(BaseUrl))
+
+            TeamsPotentialAction action = new TeamsPotentialAction()
             {
-                action = new TeamsPotentialAction()
-                {
-                    Type = "ViewAction",
-                    Name = "Click here to open in Seq",
-                    Target = new string[] { string.Format("{0}/#/events?filter=@Id%20%3D%3D%20%22{1}%22&show=expanded", BaseUrl, evt.Id) }
-                };
-            }
+                Type = "ViewAction",
+                Name = "Click here to open in Seq",
+                Target = new string[] { string.Format("{0}/#/events?filter=@Id%20%3D%3D%20%22{1}%22&show=expanded", BaseUrl, evt.Id) }
+            };
+            
 
             var color = Color;
             if (string.IsNullOrWhiteSpace(color))
@@ -100,17 +99,11 @@ namespace Seq.App.Teams
 
             TeamsCard body = new TeamsCard()
             {
-                Title = "<span style='color:"+color+"'>" + evt.Data.Level+"</span>",
+                Title = "<span style='color:"+color+"'>" + evt.Data.Level.ToString()+"</span>",
                 ThemeColor = color,
-                Text = msg.ToString()
-                
+                Text = msg.ToString(),
+                PotentialAction = new TeamsPotentialAction[] { action }
             };
-
-            if (action != null)
-            {
-                body.PotentialAction = new TeamsPotentialAction[1] { action };
-            }
-            
 
             return body;
         }
