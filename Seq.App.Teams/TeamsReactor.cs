@@ -13,7 +13,7 @@ namespace Seq.App.Teams
 {
     [SeqApp("Teams",
     Description = "Sends log events to Teams.")]
-    public class TeamsReactor : Reactor
+    public class TeamsReactor : Reactor, ISubscribeTo<LogEventData>
     {
         
         private static IDictionary<LogEventLevel, string> _levelColorMap = new Dictionary<LogEventLevel, string>
