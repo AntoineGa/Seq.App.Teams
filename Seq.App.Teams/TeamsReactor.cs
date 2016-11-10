@@ -48,7 +48,7 @@ namespace Seq.App.Teams
         IsOptional = true)]
         public bool Notify { get; set; }
 
-        public async Task On(Event<LogEventData> evt)
+        public async void On(Event<LogEventData> evt)
         {
             using (var client = new HttpClient())
             {
