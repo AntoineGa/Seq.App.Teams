@@ -39,18 +39,15 @@ namespace Seq.App.Teams
 
         [SeqAppSetting(
         DisplayName = "Trace all Message ",
-        HelpText = "Used to debug")]
+        HelpText = "Used to show all messages to trace",
+        IsOptional = true)]
         public bool TraceMessage { get; set; }
 
         [SeqAppSetting(
         HelpText = "Background color for message. One of \"yellow\", \"red\", \"green\", \"purple\", \"gray\", or \"random\". (default: auto based on message level)",
         IsOptional = true)]
         public string Color { get; set; }
-
-        [SeqAppSetting(
-        HelpText = "Whether or not messages should trigger notifications for people in the room (change the tab color, play a sound, etc). Each recipient's notification preferences are taken into account.",
-        IsOptional = true)]
-        public bool Notify { get; set; }
+        
 
         public async void On(Event<LogEventData> evt)
         {
