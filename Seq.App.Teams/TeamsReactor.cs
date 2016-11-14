@@ -49,7 +49,7 @@ namespace Seq.App.Teams
         public string Color { get; set; }
         
 
-        public async void On(Event<LogEventData> evt)
+        public void On(Event<LogEventData> evt)
         {
 
             try
@@ -57,8 +57,8 @@ namespace Seq.App.Teams
                 if (TraceMessage)
                 {
                     Log
-                                .ForContext("Uri", new Uri(TeamsBaseUrl))
-                                .Verbose("Start Processing {Message}", evt.Data.RenderedMessage);
+                        .ForContext("Uri", new Uri(TeamsBaseUrl))
+                        .Verbose("Start Processing {Message}", evt.Data.RenderedMessage);
                 }
 
                 TeamsCard body = BuildBody(evt);
@@ -70,15 +70,15 @@ namespace Seq.App.Teams
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var response = await client.PostAsJsonAsync(
+                    var response = client.PostAsJsonAsync(
                         "",
-                        body);
+                        body).Result;
 
                     if (!response.IsSuccessStatusCode)
                     {
                         Log
                             .ForContext("Uri", response.RequestMessage.RequestUri)
-                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result);
                     }
                     else
                     {
@@ -86,7 +86,7 @@ namespace Seq.App.Teams
                         {
                             Log
                                 .ForContext("Uri", response.RequestMessage.RequestUri)
-                                .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                                .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result);
                         }
                     }
                 }
