@@ -37,16 +37,17 @@ namespace Seq.App.Teams
         HelpText = "Used to send message to Teams")]
         public string TeamsBaseUrl { get; set; }
 
+        [SeqAppSetting(
+        DisplayName = "Trace all Message ",
+        HelpText = "Used to show all messages to trace",
+        IsOptional = true)]
+        public bool TraceMessage { get; set; }
 
         [SeqAppSetting(
         HelpText = "Background color for message. One of \"yellow\", \"red\", \"green\", \"purple\", \"gray\", or \"random\". (default: auto based on message level)",
         IsOptional = true)]
         public string Color { get; set; }
-
-        [SeqAppSetting(
-        HelpText = "Whether or not messages should trigger notifications for people in the room (change the tab color, play a sound, etc). Each recipient's notification preferences are taken into account.",
-        IsOptional = true)]
-        public bool Notify { get; set; }
+        
 
         public async void On(Event<LogEventData> evt)
         {
@@ -69,6 +70,15 @@ namespace Seq.App.Teams
                     Log
                         .ForContext("Uri", response.RequestMessage.RequestUri)
                         .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                }
+                else
+                {
+                    if (TraceMessage)
+                    {
+                        Log                            
+                            .ForContext("Uri", response.RequestMessage.RequestUri)
+                            .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                    }
                 }
             }
         }
