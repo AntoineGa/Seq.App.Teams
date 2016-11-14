@@ -54,6 +54,12 @@ namespace Seq.App.Teams
 
             try
             {
+                if (TraceMessage)
+                {
+                    Log
+                                .ForContext("Uri", new Uri(TeamsBaseUrl))
+                                .Verbose("Start Processing {Message}", evt.Data.RenderedMessage);
+                }
 
                 TeamsCard body = BuildBody(evt);
 
