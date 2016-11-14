@@ -51,35 +51,47 @@ namespace Seq.App.Teams
 
         public async void On(Event<LogEventData> evt)
         {
-            using (var client = new HttpClient())
-            {
-                var url = TeamsBaseUrl;
-                client.BaseAddress = new Uri(url);
 
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            try
+            {
 
                 TeamsCard body = BuildBody(evt);
 
-                var response = await client.PostAsJsonAsync(
-                    "",
-                    body);
+                using (var client = new HttpClient())
+                {
+                    var url = TeamsBaseUrl;
+                    client.BaseAddress = new Uri(url);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    Log
-                        .ForContext("Uri", response.RequestMessage.RequestUri)
-                        .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
-                }
-                else
-                {
-                    if (TraceMessage)
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var response = await client.PostAsJsonAsync(
+                        "",
+                        body);
+
+                    if (!response.IsSuccessStatusCode)
                     {
-                        Log                            
+                        Log
                             .ForContext("Uri", response.RequestMessage.RequestUri)
-                            .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                    }
+                    else
+                    {
+                        if (TraceMessage)
+                        {
+                            Log
+                                .ForContext("Uri", response.RequestMessage.RequestUri)
+                                .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync());
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+
+                Log
+                                            .ForContext("Uri", new Uri(TeamsBaseUrl))
+                                            .Error(ex, "An error occured while constructing request.");
             }
         }
 
