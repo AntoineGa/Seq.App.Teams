@@ -58,7 +58,7 @@ namespace Seq.App.Teams
                 {
                     Log
                         .ForContext("Uri", new Uri(TeamsBaseUrl))
-                        .Verbose("Start Processing {Message}", evt.Data.RenderedMessage);
+                        .Information("Start Processing {Message}", evt.Data.RenderedMessage);
                 }
 
                 TeamsCard body = BuildBody(evt);
@@ -84,9 +84,10 @@ namespace Seq.App.Teams
                     {
                         if (TraceMessage)
                         {
+                            string reponseResult = response.Content.ReadAsStringAsync().Result;
                             Log
                                 .ForContext("Uri", response.RequestMessage.RequestUri)
-                                .Verbose("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result);
+                                .Information("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, reponseResult);
                         }
                     }
                 }
