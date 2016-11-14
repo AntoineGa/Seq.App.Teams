@@ -59,8 +59,7 @@ namespace Seq.App.Teams
 
                 using (var client = new HttpClient())
                 {
-                    var url = TeamsBaseUrl;
-                    client.BaseAddress = new Uri(url);
+                    client.BaseAddress = new Uri(TeamsBaseUrl);
 
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -90,8 +89,8 @@ namespace Seq.App.Teams
             {
 
                 Log
-                                            .ForContext("Uri", new Uri(TeamsBaseUrl))
-                                            .Error(ex, "An error occured while constructing request.");
+                    .ForContext("Uri", new Uri(TeamsBaseUrl))
+                    .Error(ex, "An error occured while constructing request.");
             }
         }
 
