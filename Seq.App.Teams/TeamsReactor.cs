@@ -69,10 +69,11 @@ namespace Seq.App.Teams
 
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                    var response = client.PostAsJsonAsync(
-                        "",
-                        body).Result;
+                  
+                    var response = client.PostAsync(
+                        "", 
+                        new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
+                        ).Result;
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -105,10 +106,10 @@ namespace Seq.App.Teams
         {
 
             var msg = new StringBuilder("**" + evt.Data.Level.ToString() + ":** " + evt.Data.RenderedMessage);
-            //if (msg.Length > 1000)
-            //{
-            //    msg.Length = 1000;
-            //}
+            if (msg.Length > 1000)
+            {
+                msg.Length = 1000;
+            }
 
 
             TeamsPotentialAction action = new TeamsPotentialAction()
