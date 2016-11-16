@@ -1,0 +1,7 @@
+source https://api.nuget.org/v3/index.json
+framework >= net45
+
+nuget Microsoft.AspNet.WebApi.Client 5.2.3
+nuget Newtonsoft.Json 9.0.1
+nuget Seq.Apps 1.6.4
+nuget Serilog 2.3.0

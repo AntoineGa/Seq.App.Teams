@@ -1,0 +1,9 @@
+FRAMEWORK: >= NET45
+NUGET
+  remote: http://api.nuget.org/v3/index.json
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Newtonsoft.Json (>= 6.0.4)
+    Newtonsoft.Json (9.0.1)
+    Seq.Apps (1.6.4)
+      Serilog
+    Serilog (2.3)
