@@ -105,18 +105,21 @@ namespace Seq.App.Teams
         private TeamsCard BuildBody(Event<LogEventData> evt)
         {
 
-            var msg = new StringBuilder("**" + evt.Data.Level.ToString() + ":** " + evt.Data.RenderedMessage);
+            string link = $"{BaseUrl}/#/events?filter=@Id%20%3D%3D%20%22{evt.Id}%22&show=expanded";
+
+            var msg = new StringBuilder($"** {evt.Data.Level.ToString()} :** <a href={link}> link </a> {evt.Data.RenderedMessage} ");
             if (msg.Length > 1000)
             {
                 msg.Length = 1000;
             }
 
+            
 
             TeamsPotentialAction action = new TeamsPotentialAction()
             {
                 Type = "ViewAction",
                 Name = "Click here to open in Seq",
-                Target = new string[] { string.Format("{0}/#/events?filter=@Id%20%3D%3D%20%22{1}%22&show=expanded", BaseUrl, evt.Id) }
+                Target = new string[] { link }
             };
             
 
