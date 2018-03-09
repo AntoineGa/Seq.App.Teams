@@ -40,7 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TeamsActionTarget.cs" />
+    <Compile Include="TeamsFact.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TeamsSection.cs" />
     <Compile Include="TeamsCard.cs" />
     <Compile Include="TeamsPotentialAction.cs" />
     <Compile Include="TeamsReactor.cs" />
@@ -48,7 +52,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="paket.references" />
-    <None Include="Seq.App.Teams.nuspec" />
+    <None Include="Seq.App.Teams.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
