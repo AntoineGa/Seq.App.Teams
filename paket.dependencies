@@ -1,10 +1,10 @@
 source https://api.nuget.org/v3/index.json
 framework >= net45
 
-nuget Microsoft.AspNet.WebApi.Client 5.2.3
-nuget Newtonsoft.Json 9.0.1
-nuget Seq.Apps 1.6.4
-nuget Serilog 2.3.0
+nuget Microsoft.AspNet.WebApi.Client 5.2.4
+nuget Newtonsoft.Json 11.0.2
+nuget Seq.Apps 4.2.470
+nuget Serilog 2.6.0
 
 group Latest
     source https://api.nuget.org/v3/index.json

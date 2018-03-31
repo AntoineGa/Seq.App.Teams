@@ -13,13 +13,13 @@
     <copyright>Copyright 2016</copyright>
     <tags>seq-app seq serilog event teams</tags>
     <dependencies>
-      <dependency id="Seq.Apps" version="1.6.4.0" />
+      <dependency id="Seq.Apps" version="4.2.470" />
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Debug\Seq.App.Teams.dll" target="lib\net45" />
-    <file src="bin\Debug\Seq.App.Teams.pdb" target="lib\net45" />
-    <file src="bin\Debug\Newtonsoft.Json.dll" target="lib\net45" />
-    <file src="bin\Debug\System.Net.Http.Formatting.dll" target="lib\net45" />
+    <file src="bin\Release\Seq.App.Teams.dll" target="lib\net45" />
+    <file src="bin\Release\Seq.App.Teams.pdb" target="lib\net45" />
+    <file src="bin\Release\Newtonsoft.Json.dll" target="lib\net45" />
+    <file src="bin\Release\System.Net.Http.Formatting.dll" target="lib\net45" />
   </files>
 </package>
