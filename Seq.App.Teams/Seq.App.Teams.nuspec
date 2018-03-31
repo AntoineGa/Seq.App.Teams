@@ -17,9 +17,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Seq.App.Teams.dll" target="lib\net45" />
-    <file src="bin\Release\Seq.App.Teams.pdb" target="lib\net45" />
-    <file src="bin\Release\Newtonsoft.Json.dll" target="lib\net45" />
-    <file src="bin\Release\System.Net.Http.Formatting.dll" target="lib\net45" />
+    <file src="bin\Release\Seq.App.Teams.dll" target="lib\net452" />
+    <file src="bin\Release\Seq.App.Teams.pdb" target="lib\net452" />
+    <file src="bin\Release\Newtonsoft.Json.dll" target="lib\net452" />
+    <file src="bin\Release\System.Net.Http.Formatting.dll" target="lib\net452" />
   </files>
 </package>
