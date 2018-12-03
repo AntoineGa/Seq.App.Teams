@@ -4,6 +4,7 @@ using Seq.Apps.LogEvents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -30,7 +31,13 @@ namespace Seq.App.Teams
         HelpText = "Used for generating perma links to events in Teams messages.",
         IsOptional = true)]
         public string BaseUrl { get; set; }
-        
+
+        [SeqAppSetting(
+            DisplayName = "Web proxy",
+            HelpText = "When a web proxy is present in the network for connecting to outside URLs.",
+            IsOptional = true)]
+        public string WebProxy { get; set; }
+
         [SeqAppSetting(
         DisplayName = "Teams WebHook URL",
         HelpText = "Used to send message to Teams")]
@@ -69,7 +76,19 @@ namespace Seq.App.Teams
 
                 TeamsCard body = BuildBody(evt);
 
-                using (var client = new HttpClient())
+                var httpClientHandler = new HttpClientHandler();
+
+                if (!string.IsNullOrEmpty(WebProxy))
+                {
+                    httpClientHandler.Proxy = new WebProxy(WebProxy, false);
+                    httpClientHandler.UseProxy = true;
+                }
+                else
+                {
+                    httpClientHandler.UseProxy = false;
+                }
+
+                using (var client = new HttpClient(httpClientHandler))
                 {
                     client.BaseAddress = new Uri(TeamsBaseUrl);
 
