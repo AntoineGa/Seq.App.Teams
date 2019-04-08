@@ -39,6 +39,18 @@ namespace Seq.App.Teams
         public string WebProxy { get; set; }
 
         [SeqAppSetting(
+            DisplayName = "Web proxy user name",
+            HelpText = "Proxy user name, if authorization required",
+            IsOptional = true)]
+        public string WebProxyUserName { get; set; }
+
+        [SeqAppSetting(
+            DisplayName = "Web proxy password",
+            HelpText = "Proxy password, if authorization required",
+            IsOptional = true)]
+        public string WebProxyPassword { get; set; }
+
+        [SeqAppSetting(
         DisplayName = "Teams WebHook URL",
         HelpText = "Used to send message to Teams")]
         public string TeamsBaseUrl { get; set; }
@@ -80,7 +92,12 @@ namespace Seq.App.Teams
 
                 if (!string.IsNullOrEmpty(WebProxy))
                 {
-                    httpClientHandler.Proxy = new WebProxy(WebProxy, false);
+                    ICredentials credentials = null;
+                    if (!string.IsNullOrEmpty(WebProxyUserName))
+                    {
+                        credentials = new NetworkCredential(WebProxyUserName, WebProxyPassword);
+                    }
+                    httpClientHandler.Proxy = new WebProxy(WebProxy, false, null, credentials);
                     httpClientHandler.UseProxy = true;
                 }
                 else
