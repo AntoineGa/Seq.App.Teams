@@ -47,7 +47,8 @@ namespace Seq.App.Teams
         [SeqAppSetting(
             DisplayName = "Web proxy password",
             HelpText = "Proxy password, if authorization required",
-            IsOptional = true)]
+            IsOptional = true,
+            InputType = SettingInputType.Password)]
         public string WebProxyPassword { get; set; }
 
         [SeqAppSetting(
