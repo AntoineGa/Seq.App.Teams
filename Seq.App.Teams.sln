@@ -1,18 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{66165BC7-8607-40D3-AE67-877B5B4E9034}"
-	ProjectSection(SolutionItems) = preProject
-		paket.dependencies = paket.dependencies
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seq.App.Teams", "Seq.App.Teams\Seq.App.Teams.csproj", "{30AEE6A3-E6FD-4229-86A1-4B3B7DB6A505}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D2DDC05F-4EEE-4266-A828-0C0E0F5B1AF2}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		appveyor.yml = appveyor.yml
+		LICENSE = LICENSE
 		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A1F6682D-5638-41FB-8D67-8E8D961F861D}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{B08B5B1A-B23C-44D1-95C2-2BC7BABBAF91}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\microsoft-teams.png = Assets\microsoft-teams.png
 	EndProjectSection
 EndProject
 Global
@@ -28,5 +37,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B08B5B1A-B23C-44D1-95C2-2BC7BABBAF91} = {D2DDC05F-4EEE-4266-A828-0C0E0F5B1AF2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34F2739E-EFC9-4753-9EB3-CF2A94B9D9C3}
 	EndGlobalSection
 EndGlobal
