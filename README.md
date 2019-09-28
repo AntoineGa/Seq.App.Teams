@@ -1,4 +1,4 @@
-# Seq.App.Teams [![Build status](https://ci.appveyor.com/api/projects/status/tk5pp6lbk5poxmok?svg=true)](https://ci.appveyor.com/project/xantari/seq-app-teams) [![NuGet tag](https://img.shields.io/badge/nuget-Seq.App.Teams-blue.svg)](https://www.nuget.org/packages?q=Seq.App.Teams)
+# Seq.App.Teams [![Build status](https://ci.appveyor.com/api/projects/status/yi1gi8fv9qjynm35?svg=true)](https://ci.appveyor.com/project/GAYAntoine/seq-app-teams) [![NuGet tag](https://img.shields.io/badge/nuget-Seq.App.Teams-blue.svg)](https://www.nuget.org/packages?q=Seq.App.Teams)
 Seq application for Microsoft Teams
 
 **Important note:** This Seq App packages require Seq 5.0 or later.
