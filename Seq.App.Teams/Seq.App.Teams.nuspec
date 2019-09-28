@@ -10,16 +10,16 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>See https://github.com/AntoineGa/Seq.App.Teams for changes.</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <iconUrl>https://cdn.jsdelivr.net/gh/xantari/Seq.App.Teams/Assets/microsoft-teams.png</iconUrl>
     <tags>seq-app seq serilog event teams</tags>
     <dependencies>
-      <dependency id="Seq.Apps" version="4.2.470" />
+      <group targetFramework="net452">
+        <dependency id="Seq.Apps" version="5.0.0" />
+        <dependency id="Serilog" version="2.5.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Seq.App.Teams.dll" target="lib\net452" />
-    <file src="bin\Release\Seq.App.Teams.pdb" target="lib\net452" />
-    <file src="bin\Release\Newtonsoft.Json.dll" target="lib\net452" />
-    <file src="bin\Release\System.Net.Http.Formatting.dll" target="lib\net452" />
+    <file src="bin\Newtonsoft.Json.dll" target="lib\net452" />
   </files>
 </package>

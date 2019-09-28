@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Seq.App.Teams.Models;
+using Newtonsoft.Json;
 using Seq.Apps;
 using Seq.Apps.LogEvents;
 using System;
@@ -12,7 +13,7 @@ using System.Text;
 namespace Seq.App.Teams
 {
     [SeqApp("Teams",
-    Description = "Sends log events to Teams.")]
+    Description = "Sends log events to Microsoft Teams.")]
     public class TeamsReactor : Reactor, ISubscribeTo<LogEventData>
     {
         
@@ -26,6 +27,9 @@ namespace Seq.App.Teams
             {LogEventLevel.Fatal, "ff0000"}
         };
 
+        private const uint AlertEventType = 0xA1E77000;
+
+        #region "Settings"
         [SeqAppSetting(
         DisplayName = "Seq Base URL",
         HelpText = "Used for generating perma links to events in Teams messages.",
@@ -53,7 +57,7 @@ namespace Seq.App.Teams
 
         [SeqAppSetting(
         DisplayName = "Teams WebHook URL",
-        HelpText = "Used to send message to Teams")]
+        HelpText = "Used to send message to Teams. This can be retrieved by adding a Incoming Webhook connector to your Teams channel.")]
         public string TeamsBaseUrl { get; set; }
 
         [SeqAppSetting(
@@ -73,13 +77,23 @@ namespace Seq.App.Teams
         HelpText = "Hex theme color for messages (ex. ff0000). (default: auto based on message level)",
         IsOptional = true)]
         public string Color { get; set; }
-        
+
+        [SeqAppSetting(DisplayName = "Comma seperated list of event levels",
+    IsOptional = true,
+    HelpText = "If specified Teams card will be created only for the specified event levels, other levels will be discarded (useful for streaming events). Valid Values: Verbose,Debug,Information,Warning,Error,Fatal")]
+        public string LogEventLevels { get; set; }
+
+        #endregion
 
         public void On(Event<LogEventData> evt)
         {
 
             try
             {
+                //If the event level is defined and it is not in the list do not log it
+                if ((LogEventLevelList?.Count ?? 0) > 0 && !LogEventLevelList.Contains(evt.Data.Level))
+                    return;
+
                 if (TraceMessage)
                 {
                     Log
@@ -87,7 +101,7 @@ namespace Seq.App.Teams
                         .Information("Start Processing {Message}", evt.Data.RenderedMessage);
                 }
 
-                TeamsCard body = BuildBody(evt);
+                O365ConnectorCard body = BuildBody(evt);
 
                 var httpClientHandler = new HttpClientHandler();
 
@@ -112,17 +126,21 @@ namespace Seq.App.Teams
 
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                  
+
+                    var js = new JsonSerializerSettings();
+                    js.NullValueHandling = NullValueHandling.Ignore;
+
+                    var bodyJson = JsonConvert.SerializeObject(body, js);
                     var response = client.PostAsync(
                         "", 
-                        new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
+                        new StringContent(bodyJson, Encoding.UTF8, "application/json")
                         ).Result;
 
                     if (!response.IsSuccessStatusCode)
                     {
                         Log
                             .ForContext("Uri", response.RequestMessage.RequestUri)
-                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result);
+                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}. Request Body: {RequestBody}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result, bodyJson);
                     }
                     else
                     {
@@ -145,19 +163,54 @@ namespace Seq.App.Teams
             }
         }
 
-        private TeamsCard BuildBody(Event<LogEventData> evt)
+        public List<LogEventLevel> LogEventLevelList
+        {
+            get
+            {
+                List<LogEventLevel> result = new List<LogEventLevel>();
+                if (string.IsNullOrEmpty(LogEventLevels))
+                    return result;
+
+                var strValues = LogEventLevels.Split(new char[1] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                if ((strValues?.Length ?? 0) == 0)
+                    return result;
+
+                strValues.Aggregate(result, (acc, strValue) =>
+                {
+                    LogEventLevel enumValue = LogEventLevel.Debug;
+                    if (Enum.TryParse(strValue, out enumValue))
+                        acc.Add(enumValue);
+                    return acc;
+                });
+
+                return result;
+            }
+        }
+
+        private O365MessageCard BuildBody(Event<LogEventData> evt)
         {
             // Build action
             var url = BaseUrl;
             if (string.IsNullOrWhiteSpace(url))
-                url = Host.ListenUris.FirstOrDefault();
+                url = Host.BaseUri;
 
-            TeamsPotentialAction action = new TeamsPotentialAction()
+            var openTitle = "Open Seq Event";
+            var openUrl = $"{url}#/events?filter=@Id%20%3D%3D%20%22{evt.Id}%22&show=expanded";
+            if (IsAlert(evt))
             {
-                Name = "Click here to open in Seq",
+                openTitle = "Open Seq Alert";
+                openUrl = SafeGetProperty(evt, "ResultsUrl");
+            }
+
+            O365ConnectorCardOpenUri action = new O365ConnectorCardOpenUri()
+            {
+                Name = openTitle,
+                Type = "OpenUri", //Failure to provide this will cause a 400 badrequest
                 Targets = new[]
                 {
-                    new TeamsActionTarget { Uri = $"{url}#/events?filter=@Id%20%3D%3D%20%22{evt.Id}%22&show=expanded" }
+                    new O365ConnectorCardOpenUriTarget { Uri = openUrl, 
+                    Os = "default" //Failure to provide this will cause a 400 badrequest
+                    }
                 }
             };
 
@@ -172,7 +225,7 @@ namespace Seq.App.Teams
                 color = _levelColorMap[evt.Data.Level];
             }
 
-            TeamsCard body = new TeamsCard
+            O365MessageCard body = new O365MessageCard
             {
                 Title = evt.Data.Level.ToString().EscapeMarkdown(),
                 ThemeColor = color,
@@ -184,24 +237,44 @@ namespace Seq.App.Teams
             };
 
             // Build sections
-            var sections = new List<TeamsSection>();
+            var sections = new List<O365ConnectorCardSection>();
             if (!ExcludeProperties && evt.Data.Properties != null)
             {
                 var facts = evt.Data.Properties
                     .Where(i => i.Value != null)
-                    .Select(i => new TeamsFact { Name = i.Key, Value = i.Value.ToString().EscapeMarkdown() })
+                    .Select(i => new O365ConnectorCardFact { Name = i.Key, Value = i.Value.ToString().EscapeMarkdown() })
                     .ToArray();
 
                 if (facts.Any())
-                    sections.Add(new TeamsSection { Facts = facts});
+                    sections.Add(new O365ConnectorCardSection { Facts = facts});
             }
 
             if (!string.IsNullOrWhiteSpace(evt.Data.Exception))
-                sections.Add(new TeamsSection { Title = "Exception", Text = evt.Data.Exception.EscapeMarkdown() });
+                sections.Add(new O365ConnectorCardSection { Title = "Exception", Text = evt.Data.Exception.EscapeMarkdown() });
 
             body.Sections = sections.ToArray();
 
             return body;
+        }
+
+        /// <summary>
+        /// Dashboard alerts create a "virtual" event id, so it doesn't actually point to a specific log, but potentially a set of log events
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <returns></returns>
+        private static bool IsAlert(Event<LogEventData> evt)
+        {
+            return evt.EventType == AlertEventType;
+        }
+
+        private static string SafeGetProperty(Event<LogEventData> evt, string propertyName)
+        {
+            if (evt.Data.Properties.TryGetValue(propertyName, out var value))
+            {
+                if (value == null) return "`null`";
+                return value.ToString();
+            }
+            return "";
         }
     }
 }
