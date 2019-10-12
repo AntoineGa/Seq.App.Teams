@@ -254,7 +254,7 @@ namespace Seq.App.Teams
             var sections = new List<O365ConnectorCardSection>();
             if (!ExcludeProperties && evt.Data.Properties != null)
             {
-                var jsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                var jsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
                 var jsonSettings = new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore,
