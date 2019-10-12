@@ -75,13 +75,15 @@ namespace Seq.App.Teams
         [SeqAppSetting(
         DisplayName = "Properties to serialize as JSON",
         HelpText = "The properties that should be serialized as JSON instead of the native ToString() on the value. Multiple properties can be specified; enter one per line.",
-        InputType = SettingInputType.LongText)]
+        InputType = SettingInputType.LongText,
+        IsOptional = true)]
         public string JsonSerializedProperties { get; set; }
 
         [SeqAppSetting(
         DisplayName = "Properties to serialize as JSON - Use Indented JSON?",
         HelpText = "For properties that are serialized as JSON, should they be indented?",
-        InputType = SettingInputType.Checkbox)]
+        InputType = SettingInputType.Checkbox,
+        IsOptional = true)]
         public bool JsonSerializedPropertiesAsIndented { get; set; }
 
         [SeqAppSetting(
