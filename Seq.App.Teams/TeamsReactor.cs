@@ -73,14 +73,28 @@ namespace Seq.App.Teams
         public bool ExcludeProperties { get; set; }
 
         [SeqAppSetting(
+        DisplayName = "Properties to serialize as JSON",
+        HelpText = "The properties that should be serialized as JSON instead of the native ToString() on the value. Multiple properties can be specified; enter one per line.",
+        InputType = SettingInputType.LongText,
+        IsOptional = true)]
+        public string JsonSerializedProperties { get; set; }
+
+        [SeqAppSetting(
+        DisplayName = "Properties to serialize as JSON - Use Indented JSON?",
+        HelpText = "For properties that are serialized as JSON, should they be indented?",
+        InputType = SettingInputType.Checkbox,
+        IsOptional = true)]
+        public bool JsonSerializedPropertiesAsIndented { get; set; }
+
+        [SeqAppSetting(
         DisplayName = "Color",
         HelpText = "Hex theme color for messages (ex. ff0000). (default: auto based on message level)",
         IsOptional = true)]
         public string Color { get; set; }
 
         [SeqAppSetting(DisplayName = "Comma seperated list of event levels",
-    IsOptional = true,
-    HelpText = "If specified Teams card will be created only for the specified event levels, other levels will be discarded (useful for streaming events). Valid Values: Verbose,Debug,Information,Warning,Error,Fatal")]
+        IsOptional = true,
+        HelpText = "If specified Teams card will be created only for the specified event levels, other levels will be discarded (useful for streaming events). Valid Values: Verbose,Debug,Information,Warning,Error,Fatal")]
         public string LogEventLevels { get; set; }
 
         #endregion
@@ -208,7 +222,7 @@ namespace Seq.App.Teams
                 Type = "OpenUri", //Failure to provide this will cause a 400 badrequest
                 Targets = new[]
                 {
-                    new O365ConnectorCardOpenUriTarget { Uri = openUrl, 
+                    new O365ConnectorCardOpenUriTarget { Uri = openUrl,
                     Os = "default" //Failure to provide this will cause a 400 badrequest
                     }
                 }
@@ -230,7 +244,7 @@ namespace Seq.App.Teams
                 Title = evt.Data.Level.ToString().EscapeMarkdown(),
                 ThemeColor = color,
                 Text = msg,
-                PotentialAction = new []
+                PotentialAction = new[]
                 {
                     action
                 }
@@ -240,13 +254,24 @@ namespace Seq.App.Teams
             var sections = new List<O365ConnectorCardSection>();
             if (!ExcludeProperties && evt.Data.Properties != null)
             {
+                var jsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    Formatting = JsonSerializedPropertiesAsIndented ? Formatting.Indented : Formatting.None
+                };
+
                 var facts = evt.Data.Properties
                     .Where(i => i.Value != null)
-                    .Select(i => new O365ConnectorCardFact { Name = i.Key, Value = i.Value.ToString().EscapeMarkdown() })
+                    .Select(i => new O365ConnectorCardFact
+                    {
+                        Name = i.Key,
+                        Value = (jsonSerializedProperties.Contains(i.Key) ? JsonConvert.SerializeObject(i.Value, jsonSettings) : i.Value.ToString()).EscapeMarkdown()
+                    })
                     .ToArray();
 
                 if (facts.Any())
-                    sections.Add(new O365ConnectorCardSection { Facts = facts});
+                    sections.Add(new O365ConnectorCardSection { Facts = facts });
             }
 
             if (!string.IsNullOrWhiteSpace(evt.Data.Exception))
