@@ -1,19 +1,10 @@
-version: 1.0.{build}
-image: Visual Studio 2017
-configuration: Release
-platform: Any CPU
-assembly_info:
-  patch: true
-  file: '**\AssemblyInfo.*'
-  assembly_version: '{version}'
-  assembly_file_version: '{version}'
-  assembly_informational_version: '{version}'
-before_build:
-- cmd: nuget.exe restore seq.app.teams.sln
-build:
-  project: Seq.App.Teams.sln
-  publish_nuget: true
-  verbosity: minimal
+version: '{build}'
+skip_tags: true
+image: Visual Studio 2019
+install:
+build_script:
+  - ps: ./Build.ps1
+test: off
 deploy:
 - provider: NuGet
   api_key:
