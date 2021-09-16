@@ -5,6 +5,8 @@ install:
 build_script:
   - ps: ./Build.ps1
 test: off
+artifacts:
+  - path: Artifacts/Seq.App.*.nupkg
 deploy:
 - provider: NuGet
   api_key:

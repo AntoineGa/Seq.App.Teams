@@ -22,10 +22,10 @@ Push-Location Seq.App.Teams
 
 if ($suffix) {
     & dotnet publish -c Release -o ./obj/publish --version-suffix=$suffix
-    & dotnet pack -c Release -o ..\..\artifacts --no-build --version-suffix=$suffix
+    & dotnet pack -c Release -o ..\Artifacts --no-build --version-suffix=$suffix
 } else {
     & dotnet publish -c Release -o ./obj/publish
-    & dotnet pack -c Release -o ..\..\artifacts --no-build
+    & dotnet pack -c Release -o ..\Artifacts --no-build
 }
 if($LASTEXITCODE -ne 0) { exit 1 }    
 
