@@ -9,15 +9,16 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Seq.App.Teams
 {
     [SeqApp("Teams",
     Description = "Sends log events to Microsoft Teams.")]
-    public class TeamsReactor : Reactor, ISubscribeTo<LogEventData>
+    public class TeamsApp : SeqApp, ISubscribeToAsync<LogEventData>
     {
         
-        private static IDictionary<LogEventLevel, string> _levelColorMap = new Dictionary<LogEventLevel, string>
+        private static readonly IDictionary<LogEventLevel, string> _levelColorMap = new Dictionary<LogEventLevel, string>
         {
             {LogEventLevel.Verbose, "808080"},
             {LogEventLevel.Debug, "808080"},
@@ -99,7 +100,7 @@ namespace Seq.App.Teams
 
         #endregion
 
-        public void On(Event<LogEventData> evt)
+        public async Task OnAsync(Event<LogEventData> evt)
         {
 
             try
@@ -145,22 +146,22 @@ namespace Seq.App.Teams
                     js.NullValueHandling = NullValueHandling.Ignore;
 
                     var bodyJson = JsonConvert.SerializeObject(body, js);
-                    var response = client.PostAsync(
+                    var response = await client.PostAsync(
                         "", 
                         new StringContent(bodyJson, Encoding.UTF8, "application/json")
-                        ).Result;
+                        );
 
                     if (!response.IsSuccessStatusCode)
                     {
                         Log
                             .ForContext("Uri", response.RequestMessage.RequestUri)
-                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}. Request Body: {RequestBody}", Convert.ToInt32(response.StatusCode), response.StatusCode, response.Content.ReadAsStringAsync().Result, bodyJson);
+                            .Error("Could not send Teams message, server replied {StatusCode} {StatusMessage}: {Message}. Request Body: {RequestBody}", Convert.ToInt32(response.StatusCode), response.StatusCode, await response.Content.ReadAsStringAsync(), bodyJson);
                     }
                     else
                     {
                         if (TraceMessage)
                         {
-                            string reponseResult = response.Content.ReadAsStringAsync().Result;
+                            string reponseResult = await response.Content.ReadAsStringAsync();
                             Log
                                 .ForContext("Uri", response.RequestMessage.RequestUri)
                                 .Information("Server replied {StatusCode} {StatusMessage}: {Message}", Convert.ToInt32(response.StatusCode), response.StatusCode, reponseResult);
