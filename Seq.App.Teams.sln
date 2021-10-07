@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE = LICENSE
 		README.md = README.md
 		Build.ps1 = Build.ps1
+		Run.ps1 = Run.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A1F6682D-5638-41FB-8D67-8E8D961F861D}"
@@ -25,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{B08B5B
 		Assets\microsoft-teams.png = Assets\microsoft-teams.png
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seq.App.Teams.Tests", "Seq.App.Teams.Tests\Seq.App.Teams.Tests.csproj", "{971F2FDD-EC57-4E9D-8317-C99AFE87B575}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +38,10 @@ Global
 		{30AEE6A3-E6FD-4229-86A1-4B3B7DB6A505}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30AEE6A3-E6FD-4229-86A1-4B3B7DB6A505}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30AEE6A3-E6FD-4229-86A1-4B3B7DB6A505}.Release|Any CPU.Build.0 = Release|Any CPU
+		{971F2FDD-EC57-4E9D-8317-C99AFE87B575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{971F2FDD-EC57-4E9D-8317-C99AFE87B575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{971F2FDD-EC57-4E9D-8317-C99AFE87B575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{971F2FDD-EC57-4E9D-8317-C99AFE87B575}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

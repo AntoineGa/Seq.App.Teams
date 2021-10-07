@@ -27,8 +27,15 @@ if ($suffix) {
     & dotnet publish -c Release -o ./obj/publish
     & dotnet pack -c Release -o ..\Artifacts --no-build
 }
-if($LASTEXITCODE -ne 0) { exit 1 }    
+if($LASTEXITCODE -ne 0) { exit 2 }
 
 Pop-Location
+Push-Location Seq.App.Teams.Tests
 
+echo "build: Testing"
+
+& dotnet test -c Release
+if($LASTEXITCODE -ne 0) { exit 3 }
+
+Pop-Location
 Pop-Location
