@@ -17,7 +17,7 @@ namespace Seq.App.Teams
 
             if (evt.EventType == AlertV2EventType)
             {
-                return ("Open Seq Alert", GetProperty(evt, "Source.ResultsUrl"));
+                return ("Open Seq Alert", GetProperty(evt, "Source.ResultsUrl", raw: true));
             }
 
             return ("Open Seq Event", UILinkTo(seqBaseUrl, evt));
