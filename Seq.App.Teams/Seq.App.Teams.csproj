@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <VersionPrefix>2.0.0</VersionPrefix>
         <Description>An app for Seq that forwards events and notifications to Microsoft Teams.</Description>
         <Authors>Antoine Gay, Matt Olson</Authors>
         <PackageTags>seq-app seq serilog event teams</PackageTags>

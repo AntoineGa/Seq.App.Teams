@@ -12,22 +12,17 @@ if(Test-Path .\artifacts) {
 & dotnet restore --no-cache
 if($LASTEXITCODE -ne 0) { exit 1 }    
 
-$branch = @{ $true = $env:APPVEYOR_REPO_BRANCH; $false = $(git symbolic-ref --short -q HEAD) }[$env:APPVEYOR_REPO_BRANCH -ne $NULL];
-$revision = @{ $true = "{0:00000}" -f [convert]::ToInt32("0" + $env:APPVEYOR_BUILD_NUMBER, 10); $false = "local" }[$env:APPVEYOR_BUILD_NUMBER -ne $NULL];
-$suffix = @{ $true = ""; $false = "$($branch.Substring(0, [math]::Min(10,$branch.Length)))-$revision"}[$branch -eq "master" -and $revision -ne "local"]
+$version = @{ $true = $env:APPVEYOR_BUILD_VERSION; $false = "0.0.0" }[$env:APPVEYOR_BUILD_VERSION -ne $NULL];
 
-echo "build: Version suffix is $suffix"
+echo "build: Version is $version"
 
 Push-Location Seq.App.Teams
 
-if ($suffix) {
-    & dotnet publish -c Release -o ./obj/publish --version-suffix=$suffix
-    & dotnet pack -c Release -o ..\Artifacts --no-build --version-suffix=$suffix
-} else {
-    & dotnet publish -c Release -o ./obj/publish
-    & dotnet pack -c Release -o ..\Artifacts --no-build
-}
+& dotnet publish -c Release -o ./obj/publish /p:Version=$version
 if($LASTEXITCODE -ne 0) { exit 2 }
+
+& dotnet pack -c Release -o ..\Artifacts --no-build /p:Version=$version
+if($LASTEXITCODE -ne 0) { exit 3 }
 
 Pop-Location
 Push-Location Seq.App.Teams.Tests
@@ -35,7 +30,7 @@ Push-Location Seq.App.Teams.Tests
 echo "build: Testing"
 
 & dotnet test -c Release
-if($LASTEXITCODE -ne 0) { exit 3 }
+if($LASTEXITCODE -ne 0) { exit 4 }
 
 Pop-Location
 Pop-Location
