@@ -139,7 +139,7 @@ namespace Seq.App.Teams
                     _log.Information("Start Processing {Message}", evt.Data.RenderedMessage);
                 }
                 
-                using (var client = new HttpClient(_httpClientHandler))
+                using (var client = new HttpClient(_httpClientHandler, disposeHandler: false))
                 {
                     client.BaseAddress = new Uri(TeamsBaseUrl);
 
