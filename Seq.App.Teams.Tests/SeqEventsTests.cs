@@ -9,11 +9,14 @@ namespace Seq.App.Teams.Tests
     public class SeqEventsTests
     {
         [Theory]
+        [InlineData("Zero", "")]
         [InlineData("First", "`null`")]
         [InlineData("Second", "20")]
-        [InlineData("Third", "System\\.Collections\\.Generic\\.Dictionary\\`2\\[System\\.String,System\\.Object\\]")]
-        [InlineData("Third.Fourth", "test")]
-        [InlineData("Fifth", "")]
+        [InlineData("Third", "")]
+        [InlineData("Third.Fourth", "test 1")]
+        [InlineData("Third.Fifth", "\\{\"Sixth\":\"test 2\",\"Seventh\":123\\}")]
+        [InlineData("Eighth", "")]
+        [InlineData("Eighth.Excluded", "")]
         public void PropertiesAreRetrievedFromTheEvent(string propertyPath, string expectedMarkdown)
         {
             var data = new LogEventData
@@ -24,14 +27,34 @@ namespace Seq.App.Teams.Tests
                     ["Second"] = 20,
                     ["Third"] = new Dictionary<string, object>
                     {
-                        ["Fourth"] = "test"
+                        ["Fourth"] = "test 1",
+                        ["Fifth"] = new Dictionary<string, object>
+                        {
+                            ["Sixth"] = "test 2",
+                            ["Seventh"] = 123
+                        }
+                    },
+                    ["Eighth"] = new Dictionary<string, object>
+                    {
+                        ["Excluded"] = true
                     }
                 }
             };
-            
-            var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
 
-            var actual = SeqEvents.GetProperty(evt, propertyPath);
+            var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
+            var config = new PropertyConfig
+            {
+                ExcludedProperties = new List<string>
+                {
+                    "Eighth"
+                },
+                JsonSerializedProperties = new List<string>
+                {
+                    "Third.Fifth"
+                }
+            };
+
+            var actual = SeqEvents.GetProperty(evt, propertyPath, config);
             Assert.Equal(expectedMarkdown, actual);
         }
 
@@ -45,7 +68,7 @@ namespace Seq.App.Teams.Tests
             var actual = SeqEvents.UILinkTo(
                 seqBaseUrl,
                 new Event<LogEventData>(eventId, 0, DateTime.UtcNow, new LogEventData()));
-            
+
             Assert.Equal(expectedLink, actual);
         }
 
@@ -58,7 +81,7 @@ namespace Seq.App.Teams.Tests
             var (title, _) = SeqEvents.GetOpenLink(
                 "https://example.com",
                 new Event<LogEventData>("event-1", eventType, DateTime.UtcNow, new LogEventData()));
-            
+
             Assert.Equal(title, expectedLinkTitle);
         }
     }

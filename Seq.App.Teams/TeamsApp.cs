@@ -1,8 +1,4 @@
-﻿using Seq.App.Teams.Models;
-using Newtonsoft.Json;
-using Seq.Apps;
-using Seq.Apps.LogEvents;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,6 +6,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Seq.App.Teams.Models;
+using Seq.Apps;
+using Seq.Apps.LogEvents;
 using Serilog;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global, MemberCanBePrivate.Global, UnusedType.Global
@@ -20,6 +20,8 @@ namespace Seq.App.Teams
     Description = "Sends events and notifications to Microsoft Teams.")]
     public class TeamsApp : SeqApp, ISubscribeToAsync<LogEventData>
     {
+        private const string ExcludeAllPropertyName = "All";
+
         private static readonly IDictionary<LogEventLevel, string> LevelColorMap = new Dictionary<LogEventLevel, string>
         {
             {LogEventLevel.Verbose, "808080"},
@@ -29,12 +31,12 @@ namespace Seq.App.Teams
             {LogEventLevel.Error, "ff0000"},
             {LogEventLevel.Fatal, "ff0000"}
         };
-        
+
         private HttpClientHandler _httpClientHandler;
         private ILogger _log;
 
         #region "Settings"
-        
+
         [SeqAppSetting(
             DisplayName = "Seq Base URL",
             HelpText = "Used for generating links to events in Teams messages; if not specified, Seq's configured base URL will be used.",
@@ -72,10 +74,10 @@ namespace Seq.App.Teams
         public bool TraceMessage { get; set; }
 
         [SeqAppSetting(
-            DisplayName = "Exclude Properties",
-            HelpText = "Exclude the Seq properties from the messages",
+            DisplayName = "Properties to exclude",
+            HelpText = "The properties that will be excluded from the messages. Use '" + ExcludeAllPropertyName + "' to exclude all Seq properties. Multiple properties can be specified; enter one per line.",
             IsOptional = true)]
-        public bool ExcludeProperties { get; set; }
+        public string ExcludedProperties { get; set; }
 
         [SeqAppSetting(
             DisplayName = "Properties to serialize as JSON",
@@ -108,7 +110,7 @@ namespace Seq.App.Teams
         protected override void OnAttached()
         {
             _log = TraceMessage ? Log.ForContext("Uri", TeamsBaseUrl) : Log;
-            
+
             _httpClientHandler = new HttpClientHandler();
             if (!string.IsNullOrEmpty(WebProxy))
             {
@@ -138,7 +140,7 @@ namespace Seq.App.Teams
                 {
                     _log.Information("Start Processing {Message}", evt.Data.RenderedMessage);
                 }
-                
+
                 using (var client = new HttpClient(_httpClientHandler, disposeHandler: false))
                 {
                     client.BaseAddress = new Uri(TeamsBaseUrl);
@@ -171,7 +173,7 @@ namespace Seq.App.Teams
             }
             catch (Exception ex)
             {
-               _log.Error(ex, "An error occured while constructing the request");
+                _log.Error(ex, "An error occured while constructing the request");
             }
         }
 
@@ -244,23 +246,22 @@ namespace Seq.App.Teams
 
             // Build sections
             var sections = new List<O365ConnectorCardSection>();
-            if (!ExcludeProperties && evt.Data.Properties != null)
+            var config = new PropertyConfig
             {
-                var jsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
-                var jsonSettings = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    Formatting = JsonSerializedPropertiesAsIndented ? Formatting.Indented : Formatting.None
-                };
+                ExcludedProperties = ExcludedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                JsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                JsonSerializedPropertiesAsIndented = JsonSerializedPropertiesAsIndented
+            };
 
-                var facts = evt.Data.Properties
-                    .Where(i => i.Value != null)
-                    .Select(i => new O365ConnectorCardFact
-                    {
-                        Name = i.Key,
-                        Value = (jsonSerializedProperties.Contains(i.Key) ? JsonConvert.SerializeObject(i.Value, jsonSettings) : i.Value.ToString()).EscapeMarkdown()
-                    })
-                    .ToArray();
+            if (!config.ExcludedProperties.Contains(ExcludeAllPropertyName))
+            {
+                var properties = SeqEvents.GetProperties(evt, config);
+
+                var facts = properties.Where(x => !string.IsNullOrEmpty(x.Value)).Select(x => new O365ConnectorCardFact
+                {
+                    Name = x.Key,
+                    Value = x.Value
+                }).ToArray();
 
                 if (facts.Any())
                     sections.Add(new O365ConnectorCardSection { Facts = facts });
