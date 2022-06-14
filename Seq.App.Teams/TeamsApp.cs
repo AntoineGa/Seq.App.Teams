@@ -76,6 +76,7 @@ namespace Seq.App.Teams
         [SeqAppSetting(
             DisplayName = "Properties to exclude",
             HelpText = "The properties that will be excluded from the messages. Use '" + ExcludeAllPropertyName + "' to exclude all Seq properties. Multiple properties can be specified; enter one per line.",
+            InputType = SettingInputType.LongText,
             IsOptional = true)]
         public string ExcludedProperties { get; set; }
 
