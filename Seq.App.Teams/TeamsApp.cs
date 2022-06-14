@@ -200,14 +200,23 @@ namespace Seq.App.Teams
             }
         }
 
+        private SeqConfig GetConfig()
+        {
+            return new SeqConfig
+            {
+                SeqBaseUrl = string.IsNullOrWhiteSpace(BaseUrl) ? Host.BaseUri : BaseUrl,
+                ExcludedProperties = ExcludedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                JsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
+                JsonSerializedPropertiesAsIndented = JsonSerializedPropertiesAsIndented
+            };
+        }
+
         private O365MessageCard BuildBody(Event<LogEventData> evt)
         {
-            // Build action
-            var url = BaseUrl;
-            if (string.IsNullOrWhiteSpace(url))
-                url = Host.BaseUri;
+            var config = GetConfig();
 
-            var (openTitle, openUrl) = SeqEvents.GetOpenLink(url, evt);
+            // Build action
+            var (openTitle, openUrl) = SeqEvents.GetOpenLink(config, evt);
             var action = new O365ConnectorCardOpenUri
             {
                 Name = openTitle,
@@ -225,7 +234,7 @@ namespace Seq.App.Teams
             // Build message
             var msg = evt.Data.RenderedMessage;
             if (msg.Length > 1000)
-                msg = msg.EscapeMarkdown().Substring(0, 1000);
+                msg = TeamsSyntax.Escape(msg).Substring(0, 1000);
 
             var color = Color;
             if (string.IsNullOrWhiteSpace(color))
@@ -235,7 +244,7 @@ namespace Seq.App.Teams
 
             var body = new O365MessageCard
             {
-                Title = evt.Data.Level.ToString().EscapeMarkdown(),
+                Title = TeamsSyntax.Escape(evt.Data.Level.ToString()),
                 ThemeColor = color,
                 Text = msg,
                 PotentialAction = new O365ConnectorCardActionBase[]
@@ -246,16 +255,10 @@ namespace Seq.App.Teams
 
             // Build sections
             var sections = new List<O365ConnectorCardSection>();
-            var config = new PropertyConfig
-            {
-                ExcludedProperties = ExcludedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
-                JsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
-                JsonSerializedPropertiesAsIndented = JsonSerializedPropertiesAsIndented
-            };
 
             if (!config.ExcludedProperties.Contains(ExcludeAllPropertyName))
             {
-                var properties = SeqEvents.GetProperties(evt, config);
+                var properties = SeqEvents.GetProperties(config, evt);
 
                 var facts = properties.Where(x => !string.IsNullOrEmpty(x.Value)).Select(x => new O365ConnectorCardFact
                 {
@@ -268,7 +271,7 @@ namespace Seq.App.Teams
             }
 
             if (!string.IsNullOrWhiteSpace(evt.Data.Exception))
-                sections.Add(new O365ConnectorCardSection { Title = "Exception", Text = evt.Data.Exception.EscapeMarkdown() });
+                sections.Add(new O365ConnectorCardSection { Title = "Exception", Text = TeamsSyntax.Escape(evt.Data.Exception) });
 
             body.Sections = sections.ToArray();
 

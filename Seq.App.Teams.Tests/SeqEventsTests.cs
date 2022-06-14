@@ -42,7 +42,7 @@ namespace Seq.App.Teams.Tests
             };
 
             var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
-            var config = new PropertyConfig
+            var config = new SeqConfig
             {
                 ExcludedProperties = new List<string>
                 {
@@ -54,7 +54,8 @@ namespace Seq.App.Teams.Tests
                 }
             };
 
-            var actual = SeqEvents.GetProperty(evt, propertyPath, config);
+            var actual = SeqEvents.GetProperty(config, evt, propertyPath);
+
             Assert.Equal(expectedMarkdown, actual);
         }
 
@@ -65,9 +66,7 @@ namespace Seq.App.Teams.Tests
         [InlineData("https://example.com/test/", "event-123", "https://example.com/test/#/events?filter=@Id%20%3D%3D%20%22event-123%22&show=expanded")]
         public void EventLinksAreGenerated(string seqBaseUrl, string eventId, string expectedLink)
         {
-            var actual = SeqEvents.UILinkTo(
-                seqBaseUrl,
-                new Event<LogEventData>(eventId, 0, DateTime.UtcNow, new LogEventData()));
+            var actual = SeqEvents.GetLinkToEvent(seqBaseUrl, eventId);
 
             Assert.Equal(expectedLink, actual);
         }
@@ -79,7 +78,7 @@ namespace Seq.App.Teams.Tests
         public void CorrectOpenLinkTitleIsIdentified(uint eventType, string expectedLinkTitle)
         {
             var (title, _) = SeqEvents.GetOpenLink(
-                "https://example.com",
+                new SeqConfig { SeqBaseUrl = "https://example.com" },
                 new Event<LogEventData>("event-1", eventType, DateTime.UtcNow, new LogEventData()));
 
             Assert.Equal(title, expectedLinkTitle);
