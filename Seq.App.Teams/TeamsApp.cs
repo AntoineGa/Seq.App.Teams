@@ -202,13 +202,23 @@ namespace Seq.App.Teams
 
         private SeqConfig GetConfig()
         {
-            return new SeqConfig
+            var config = new SeqConfig
             {
                 SeqBaseUrl = string.IsNullOrWhiteSpace(BaseUrl) ? Host.BaseUri : BaseUrl,
                 ExcludedProperties = ExcludedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 JsonSerializedProperties = JsonSerializedProperties?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 JsonSerializedPropertiesAsIndented = JsonSerializedPropertiesAsIndented
             };
+
+            foreach (var specialTreatedPropertyPath in SeqProperties.SpecialTreatedPropertyPaths)
+            {
+                if (!config.ExcludedProperties.Contains(specialTreatedPropertyPath))
+                {
+                    config.ExcludedProperties.Add(specialTreatedPropertyPath);
+                }
+            }
+
+            return config;
         }
 
         private O365MessageCard BuildBody(Event<LogEventData> evt)
@@ -216,7 +226,7 @@ namespace Seq.App.Teams
             var config = GetConfig();
 
             // Build action
-            var (openTitle, openUrl) = SeqEvents.GetOpenLink(config, evt);
+            var (openTitle, openUrl) = SeqEvents.GetOpenLink(config.SeqBaseUrl, evt);
             var action = new O365ConnectorCardOpenUri
             {
                 Name = openTitle,

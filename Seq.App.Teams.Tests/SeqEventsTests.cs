@@ -78,7 +78,7 @@ namespace Seq.App.Teams.Tests
         public void CorrectOpenLinkTitleIsIdentified(uint eventType, string expectedLinkTitle)
         {
             var (title, _) = SeqEvents.GetOpenLink(
-                new SeqConfig { SeqBaseUrl = "https://example.com" },
+                "https://example.com",
                 new Event<LogEventData>("event-1", eventType, DateTime.UtcNow, new LogEventData()));
 
             Assert.Equal(title, expectedLinkTitle);

@@ -9,10 +9,6 @@ namespace Seq.App.Teams
     public static class SeqEvents
     {
         private const uint AlertV1EventType = 0xA1E77000, AlertV2EventType = 0xA1E77001;
-        private const string ResultsPropertyPath = "Source.Results";
-        private const string ResultsUrlPropertyPathV1 = "ResultsUrl";
-        private const string ResultsUrlPropertyPathV2 = "Source.ResultsUrl";
-        private const string ContributingEventsPropertyPath = "Source.ContributingEvents";
 
         private static readonly JsonSerializerSettings JsonSettingsDefault = new JsonSerializerSettings
         {
@@ -25,16 +21,18 @@ namespace Seq.App.Teams
             Formatting = Formatting.Indented
         };
 
-        public static (string description, string href) GetOpenLink(SeqConfig config, Event<LogEventData> evt)
+        public static (string description, string href) GetOpenLink(string seqBaseUrl, Event<LogEventData> evt)
         {
+            var config = new SeqConfig { SeqBaseUrl = seqBaseUrl };
+
             if (evt.EventType == AlertV1EventType)
             {
-                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV1, raw: true));
+                return ("Open Seq Alert", GetProperty(config, evt, SeqProperties.ResultsUrlPropertyPathV1, raw: true));
             }
 
             if (evt.EventType == AlertV2EventType)
             {
-                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV2, raw: true));
+                return ("Open Seq Alert", GetProperty(config, evt, SeqProperties.ResultsUrlPropertyPathV2, raw: true));
             }
 
             return ("Open Seq Event", GetLinkToEvent(config.SeqBaseUrl, evt.Id));
@@ -87,7 +85,7 @@ namespace Seq.App.Teams
             {
                 return TeamsSyntax.Code("null");
             }
-            else if (config.JsonSerializedProperties.Contains(propertyPath) || propertyPath == ResultsPropertyPath)
+            else if (config.JsonSerializedProperties.Contains(propertyPath) || propertyPath == SeqProperties.ResultsPropertyPath)
             {
                 var settings = config.JsonSerializedPropertiesAsIndented ? JsonSettingsIndented : JsonSettingsDefault;
 
@@ -95,7 +93,7 @@ namespace Seq.App.Teams
 
                 return raw ? value : TeamsSyntax.Escape(value);
             }
-            else if (string.Equals(propertyPath, ContributingEventsPropertyPath) &&
+            else if (string.Equals(propertyPath, SeqProperties.ContributingEventsPropertyPath) &&
                      property.Value is IEnumerable<object> contributingEvents)
             {
                 var contributingEventsListItems = new List<string>();
