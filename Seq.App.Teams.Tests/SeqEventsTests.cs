@@ -42,7 +42,7 @@ namespace Seq.App.Teams.Tests
             };
 
             var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
-            var config = new PropertyConfig
+            var config = new SeqConfig
             {
                 ExcludedProperties = new List<string>
                 {
@@ -54,7 +54,8 @@ namespace Seq.App.Teams.Tests
                 }
             };
 
-            var actual = SeqEvents.GetProperty(evt, propertyPath, config);
+            var actual = SeqEvents.GetProperty(config, evt, propertyPath);
+
             Assert.Equal(expectedMarkdown, actual);
         }
 
@@ -65,9 +66,7 @@ namespace Seq.App.Teams.Tests
         [InlineData("https://example.com/test/", "event-123", "https://example.com/test/#/events?filter=@Id%20%3D%3D%20%22event-123%22&show=expanded")]
         public void EventLinksAreGenerated(string seqBaseUrl, string eventId, string expectedLink)
         {
-            var actual = SeqEvents.UILinkTo(
-                seqBaseUrl,
-                new Event<LogEventData>(eventId, 0, DateTime.UtcNow, new LogEventData()));
+            var actual = SeqEvents.GetLinkToEvent(seqBaseUrl, eventId);
 
             Assert.Equal(expectedLink, actual);
         }
@@ -83,6 +82,34 @@ namespace Seq.App.Teams.Tests
                 new Event<LogEventData>("event-1", eventType, DateTime.UtcNow, new LogEventData()));
 
             Assert.Equal(title, expectedLinkTitle);
+        }
+
+        [Fact]
+        public void ContributingEventsAreFormattedProperly()
+        {
+            var data = new LogEventData
+            {
+                Properties = new Dictionary<string, object>
+                {
+                    ["Source"] = new Dictionary<string, object>
+                    {
+                        ["ContributingEvents"] = new List<List<string>>
+                        {
+                            new List<string> { "id", "timestamp", "message" },
+                            new List<string> { "event-1", "2022-06-13T08:40:10.2406864Z", "message 1 `will be escaped`" },
+                            new List<string> { "event-2", "2022-06-13T12:23:41.2406864Z", "message 2" },
+                        }
+                    }
+                }
+            };
+
+            var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
+            var config = new SeqConfig { SeqBaseUrl = "https://example.com" };
+
+            var actual = SeqEvents.GetProperty(config, evt, SeqProperties.ContributingEventsPropertyPath);
+
+            Assert.Equal("- 2022-06-13T08:40:10.2406864Z [message 1 \\`will be escaped\\`](https://example.com/#/events?filter=@Id%20%3D%3D%20%22event-1%22&show=expanded)\r\n" +
+                         "- 2022-06-13T12:23:41.2406864Z [message 2](https://example.com/#/events?filter=@Id%20%3D%3D%20%22event-2%22&show=expanded)", actual);
         }
     }
 }
