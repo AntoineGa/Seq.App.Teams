@@ -24,22 +24,17 @@ namespace Seq.App.Teams
             NullValueHandling = NullValueHandling.Ignore,
             Formatting = Formatting.Indented
         };
-        private static readonly List<string> RawProperties = new List<string>
-        {
-            ResultsUrlPropertyPathV1,
-            ResultsUrlPropertyPathV2
-        };
 
         public static (string description, string href) GetOpenLink(SeqConfig config, Event<LogEventData> evt)
         {
             if (evt.EventType == AlertV1EventType)
             {
-                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV1));
+                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV1, raw: true));
             }
 
             if (evt.EventType == AlertV2EventType)
             {
-                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV2));
+                return ("Open Seq Alert", GetProperty(config, evt, ResultsUrlPropertyPathV2, raw: true));
             }
 
             return ("Open Seq Event", GetLinkToEvent(config.SeqBaseUrl, evt.Id));
@@ -50,19 +45,19 @@ namespace Seq.App.Teams
             return $"{seqBaseUrl.TrimEnd('/')}/#/events?filter=@Id%20%3D%3D%20%22{eventId}%22&show=expanded";
         }
 
-        public static string GetProperty(SeqConfig config, Event<LogEventData> evt, string propertyPath)
+        public static string GetProperty(SeqConfig config, Event<LogEventData> evt, string propertyPath, bool raw = false)
         {
-            var properties = GetProperties(config, evt);
+            var properties = GetProperties(config, evt, raw);
 
             return properties.TryGetValue(propertyPath, out var value) ? value : "";
         }
 
-        public static IDictionary<string, string> GetProperties(SeqConfig config, Event<LogEventData> evt)
+        public static IDictionary<string, string> GetProperties(SeqConfig config, Event<LogEventData> evt, bool raw = false)
         {
-            return GetProperties(config, evt.Data.Properties).ToDictionary(x => x.Key, x => x.Value);
+            return GetProperties(config, evt.Data.Properties, "", raw).ToDictionary(x => x.Key, x => x.Value);
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetProperties(SeqConfig config, IReadOnlyDictionary<string, object> properties, string parentPropertyPath = "")
+        private static IEnumerable<KeyValuePair<string, string>> GetProperties(SeqConfig config, IReadOnlyDictionary<string, object> properties, string parentPropertyPath = "", bool raw = false)
         {
             if (properties == null) yield break;
 
@@ -86,11 +81,19 @@ namespace Seq.App.Teams
             }
         }
 
-        private static string GetPropertyValue(string propertyPath, KeyValuePair<string, object> property, SeqConfig config)
+        private static string GetPropertyValue(string propertyPath, KeyValuePair<string, object> property, SeqConfig config, bool raw = false)
         {
             if (property.Value is null)
             {
                 return TeamsSyntax.Code("null");
+            }
+            else if (config.JsonSerializedProperties.Contains(propertyPath) || propertyPath == ResultsPropertyPath)
+            {
+                var settings = config.JsonSerializedPropertiesAsIndented ? JsonSettingsIndented : JsonSettingsDefault;
+
+                var value = JsonConvert.SerializeObject(property.Value, settings);
+
+                return raw ? value : TeamsSyntax.Escape(value);
             }
             else if (string.Equals(propertyPath, ContributingEventsPropertyPath) &&
                      property.Value is IEnumerable<object> contributingEvents)
@@ -114,17 +117,11 @@ namespace Seq.App.Teams
 
                 return TeamsSyntax.List(contributingEventsListItems);
             }
-            else if (config.JsonSerializedProperties.Contains(propertyPath) || propertyPath == ResultsPropertyPath)
-            {
-                var settings = config.JsonSerializedPropertiesAsIndented ? JsonSettingsIndented : JsonSettingsDefault;
-
-                return TeamsSyntax.Escape(JsonConvert.SerializeObject(property.Value, settings));
-            }
             else
             {
                 var value = property.Value.ToString();
 
-                return RawProperties.Contains(propertyPath) ? value : TeamsSyntax.Escape(value);
+                return raw ? value : TeamsSyntax.Escape(value);
             }
         }
     }
