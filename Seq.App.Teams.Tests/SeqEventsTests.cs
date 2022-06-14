@@ -83,5 +83,33 @@ namespace Seq.App.Teams.Tests
 
             Assert.Equal(title, expectedLinkTitle);
         }
+
+        [Fact]
+        public void ContributingEventsAreFormattedProperly()
+        {
+            var data = new LogEventData
+            {
+                Properties = new Dictionary<string, object>
+                {
+                    ["Source"] = new Dictionary<string, object>
+                    {
+                        ["ContributingEvents"] = new List<List<string>>
+                        {
+                            new List<string> { "id", "timestamp", "message" },
+                            new List<string> { "event-1", "2022-06-13T08:40:10.2406864Z", "message 1 `will be escaped`" },
+                            new List<string> { "event-2", "2022-06-13T12:23:41.2406864Z", "message 2" },
+                        }
+                    }
+                }
+            };
+
+            var evt = new Event<LogEventData>("event-123", 4, DateTime.UtcNow, data);
+            var config = new SeqConfig { SeqBaseUrl = "https://example.com" };
+
+            var actual = SeqEvents.GetProperty(config, evt, SeqProperties.ContributingEventsPropertyPath);
+
+            Assert.Equal("- 2022-06-13T08:40:10.2406864Z [message 1 \\`will be escaped\\`](https://example.com/#/events?filter=@Id%20%3D%3D%20%22event-1%22&show=expanded)\r\n" +
+                         "- 2022-06-13T12:23:41.2406864Z [message 2](https://example.com/#/events?filter=@Id%20%3D%3D%20%22event-2%22&show=expanded)", actual);
+        }
     }
 }

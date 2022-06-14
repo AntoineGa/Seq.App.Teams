@@ -42,7 +42,7 @@ namespace Seq.App.Teams
             if (text == null) throw new ArgumentNullException(nameof(text));
             if (url == null) throw new ArgumentNullException(nameof(url));
 
-            return "[" + Escape(text) + "](" + Escape(url) + ")";
+            return "[" + Escape(text) + "](" + url + ")";
         }
 
         public static string List(IEnumerable<string> items)
