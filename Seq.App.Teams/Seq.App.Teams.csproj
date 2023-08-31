@@ -14,7 +14,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="Seq.Apps" Version="5.1.0" />
+      <PackageReference Include="Seq.Apps" Version="2023.4.0" />
       <PackageReference Include="Serilog" Version="2.10.0" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     </ItemGroup>
